@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { Link } from "react-router";
@@ -6,6 +6,8 @@ import { UserCircleIcon } from "../../icons";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [adminName, setAdminName] = useState("Admin"); // Default or initial value
+  const [adminEmail, setAdminEmail] = useState("admin@gmail.com"); // Default or initial value
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -14,6 +16,24 @@ export default function UserDropdown() {
   function closeDropdown() {
     setIsOpen(false);
   }
+
+  useEffect(() => {
+    const storedProfile = localStorage.getItem("admin-profile");
+    if (storedProfile) {
+      try {
+        const profile = JSON.parse(storedProfile);
+        if (profile && profile.name) {
+          setAdminName(profile.name);
+        }
+        if (profile && profile.email) {
+          setAdminEmail(profile.email);
+        }
+      } catch (error) {
+        console.error("Failed to parse admin profile from localStorage", error);
+      }
+    }
+  }, []);
+
   return (
     <div className="relative">
       <button
@@ -22,10 +42,10 @@ export default function UserDropdown() {
       >
         <span className="mr-3 overflow-hidden rounded-full h-8 w-8">
           {/* <img src="/images/user/owner.jpg" alt="User" /> */}
-          <UserCircleIcon  className="h-full w-full"/>
+          <UserCircleIcon className="h-full w-full" />
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">Musharof</span>
+        <span className="block mr-1 font-medium text-theme-sm">{adminName}</span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
             isOpen ? "rotate-180" : ""
@@ -53,10 +73,10 @@ export default function UserDropdown() {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            Musharof Chowdhury
+            {adminName}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            randomuser@pimjo.com
+            {adminEmail}
           </span>
         </div>
 

@@ -3,8 +3,13 @@ import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
+import { UserProfile } from "../../pages/AdminPages/IndividualUser";
 
-export default function UserInfoCard() {
+interface UserProps {
+  user: UserProfile | null;
+}
+
+export default function UserInfoCard({ user }: UserProps) {
   const { isOpen, closeModal } = useModal();
   const handleSave = () => {
     // Handle save logic here
@@ -25,7 +30,7 @@ export default function UserInfoCard() {
                 Name
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Musharof
+                {user?.name}
               </p>
             </div>
 
@@ -43,7 +48,7 @@ export default function UserInfoCard() {
                 Email address
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                randomuser@pimjo.com
+              {user?.email}
               </p>
             </div>
 
@@ -52,7 +57,7 @@ export default function UserInfoCard() {
                 Phone
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                +09 363 398 46
+              {user?.phoneNo}
               </p>
             </div>
 

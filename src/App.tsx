@@ -22,13 +22,51 @@ import Home from "./pages/AdminPages/Dashboard/Home";
 import AllOrganisationUsers from "./pages/AdminPages/AllOrganisationUsers/AllOrganisationUsers";
 import IndividualPackages from "./pages/AdminPages/IndividualPackages/IndividualPackages";
 import OrganisationPackages from "./pages/AdminPages/OrganisationPackages/OrganisationPackages";
-import IndividualUsers from "./pages/AdminPages/AllIndividualUsers/AllIndividualUsers";
+
 import UserSubscriptions from "./pages/AdminPages/UserSubscriptions/UserSubscriptions";
 import UserTransactions from "./pages/AdminPages/UserTransactions/UserTransactions";
-import UserWalletHistory from "./pages/AdminPages/UserWalletHistory/UserTransactions";
+import UserWalletHistory from "./pages/AdminPages/UserWalletHistory/UserWalletHistory";
 import ViewDocuments from "./pages/AdminPages/ViewDocuments/ViewDocuments";
+import { useEffect, useState } from "react";
+import IndividualUsers from "./pages/AdminPages/AllIndividualUsers/AllIndividualUsers";
+import { IndividualUser, UserProfile } from "./pages/AdminPages/IndividualUser";
+import axios from "axios";
 
 export default function App() {
+  const [selectedUser, setSelectedUser] = useState<IndividualUser | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
+
+  const getProfileDetails = async () => {
+    try {
+      const token = localStorage.getItem("admin-token");
+      // Assuming an API endpoint for fetching individual user details by ID
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/admin/profile`,
+        {
+          headers: {
+            Authorization: `${token}`,
+          },
+        }
+      );
+      const userTemp: UserProfile = res?.data?.admin; // Assuming the API returns { user: IndividualUser }
+      setUser(userTemp); // Update the selected user state in App.tsx
+      localStorage.setItem("admin-profile", JSON.stringify(userTemp));
+      console.log(userTemp);
+      return userTemp; // Optionally return the fetched user object
+    } catch (error) {
+      console.error(`Error fetching profile for user ID `, error);
+      setSelectedUser(null); // Clear selected user on error
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    getProfileDetails();
+    if (user) {
+      console.log(user);
+    }
+  }, []);
+
   return (
     <>
       <Router>
@@ -41,12 +79,14 @@ export default function App() {
             <Route
               index
               path="/individual-users"
-              element={<IndividualUsers />}
+              element={<IndividualUsers setSelectedUser={setSelectedUser} />}
             />
             <Route
               index
               path="/organisation-users"
-              element={<AllOrganisationUsers />}
+              element={
+                <AllOrganisationUsers setSelectedUser={setSelectedUser} />
+              }
             />
 
             <Route
@@ -63,25 +103,29 @@ export default function App() {
             <Route
               index
               path="/user-subscriptions"
-              element={<UserSubscriptions />}
+              element={<UserSubscriptions selectedUser={selectedUser} />}
             />
 
             <Route
               index
               path="/user-transactions"
-              element={<UserTransactions />}
+              element={<UserTransactions selectedUser={selectedUser} />}
             />
 
             <Route
               index
               path="/user-wallet-history"
-              element={<UserWalletHistory />}
+              element={<UserWalletHistory selectedUser={selectedUser} />}
             />
 
-            <Route index path="/view-documents" element={<ViewDocuments />} />
+            <Route
+              index
+              path="/view-documents"
+              element={<ViewDocuments selectedUser={selectedUser} />}
+            />
 
             {/* Others Page */}
-            <Route path="/profile" element={<UserProfiles />} />
+            <Route path="/profile" element={<UserProfiles user={user} />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/blank" element={<Blank />} />
 

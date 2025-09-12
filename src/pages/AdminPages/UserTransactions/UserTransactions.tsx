@@ -1,7 +1,12 @@
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
+import { IndividualUser } from "../IndividualUser";
 import UserTransactionsList from "./UserTransactionsList";
 
-const UserTransactions = () => {
+interface IndividualUsersProps {
+  selectedUser: IndividualUser | null;
+}
+
+const UserTransactions = ({ selectedUser }: IndividualUsersProps) => {
   return (
     <div className="space-y-6">
       <PageBreadcrumb pageTitle="Transactions" />
@@ -10,7 +15,7 @@ const UserTransactions = () => {
       </h3>
       <div className="space-y-6">
         {/* <ComponentCard title="Sub Admins"> */}
-        <UserTransactionsList />
+        <UserTransactionsList selectedUser={selectedUser} />
         {/* </ComponentCard> */}
       </div>
     </div>
