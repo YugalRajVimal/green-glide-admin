@@ -35,37 +35,71 @@ import axios from "axios";
 export default function App() {
   const [selectedUser, setSelectedUser] = useState<IndividualUser | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<
+    boolean | null
+  >(null); // null = checking
 
   const getProfileDetails = async () => {
     try {
       const token = localStorage.getItem("admin-token");
-      // Assuming an API endpoint for fetching individual user details by ID
+      if (!token) return null;
+
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/admin/profile`,
         {
-          headers: {
-            Authorization: `${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      const userTemp: UserProfile = res?.data?.admin; // Assuming the API returns { user: IndividualUser }
-      setUser(userTemp); // Update the selected user state in App.tsx
+
+      const userTemp: UserProfile = res?.data?.admin;
+      setUser(userTemp);
       localStorage.setItem("admin-profile", JSON.stringify(userTemp));
-      console.log(userTemp);
-      return userTemp; // Optionally return the fetched user object
+      return userTemp;
     } catch (error) {
-      console.error(`Error fetching profile for user ID `, error);
-      setSelectedUser(null); // Clear selected user on error
+      console.error("Error fetching profile:", error);
+      setUser(null);
       return null;
     }
   };
 
   useEffect(() => {
-    getProfileDetails();
-    if (user) {
-      console.log(user);
-    }
+    const checkAuth = async () => {
+      try {
+        const token = localStorage.getItem("admin-token");
+        if (!token && window.location.pathname !== "/signin") {
+          window.location.href = "/signin";
+        }
+        if (!token) {
+          setIsAdminAuthenticated(false);
+          return;
+        }
+
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/admin/auth`,
+          {
+            headers: { Authorization: `${token}` },
+          }
+        );
+
+        if (res.status === 200) {
+          setIsAdminAuthenticated(true);
+          await getProfileDetails();
+          window.location.href = "/";
+        } else {
+          setIsAdminAuthenticated(false);
+        }
+      } catch (err) {
+        console.error("Auth check failed:", err);
+        setIsAdminAuthenticated(false);
+      }
+    };
+
+    checkAuth();
   }, []);
+
+  if (isAdminAuthenticated === null) {
+    return <div>Loading...</div>; // Spinner/loader while checking
+  }
 
   return (
     <>
